@@ -1,4 +1,4 @@
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, Instant};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TimeAgo {
@@ -7,7 +7,7 @@ pub struct TimeAgo {
 }
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum TimeType {
-    SystemTime(SystemTime),
+    Instant(Instant),
     Duration(Duration),
 }
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -21,15 +21,6 @@ pub struct Config {
 // is_weeks: false -> "23 day(s) ago" is displayed instead of "1 week(s) ago".
 // is_months: false -> "Nov 20 at 11:30"  is displayed instead of "1 month(s) ago".
 // is_years: false -> "Nov 10 at 21:23" is displayed instead of "10 years ago"
-impl Default for Config {
-    fn default() -> Self {
-        Config {
-            is_weeks: false,
-            is_months: false,
-            is_years: false,
-        }
-    }
-}
 
 impl TimeAgo {
     pub fn with_config(config: Config, time_type: TimeType) -> TimeAgo {
@@ -43,20 +34,18 @@ impl TimeAgo {
     }
 
     pub fn now(config: Config) -> TimeAgo {
-        Self::from_system_time(config, SystemTime::now())
+        Self::from_instant(config, Instant::now())
     }
-    pub fn from_system_time(config: Config, system_time: SystemTime) -> TimeAgo {
+    pub fn from_instant(config: Config, instant: Instant) -> TimeAgo {
         TimeAgo {
             config,
-            time_type: TimeType::SystemTime(system_time),
+            time_type: TimeType::Instant(instant),
         }
     }
 
     pub fn convert(&self) -> String {
         let seconds = match &self.time_type {
-            TimeType::SystemTime(value) => {
-                value.duration_since(SystemTime::now()).unwrap().as_secs()
-            }
+            TimeType::Instant(value) => Instant::now().duration_since(*value).as_secs(),
             TimeType::Duration(value) => value.as_secs(),
         };
         match seconds {
@@ -78,19 +67,18 @@ impl TimeAgo {
             (172_800..=604_799) => format!("{} days ago", seconds / 60 / 60 / 24),
             //1 week to 1 week 6 days 23 hours 59 minutes 59 seconds
             (604_800..=1_209_599) => {
-                if &self.config.is_weeks {
+                if self.config.is_weeks {
                     "1 week ago".to_string()
                 } else {
                     format!("{} days ago", seconds / 60 / 60 / 24)
                 }
             }
-            //2 weeks to 29 days 23 hours 59 minutes 59 seconds
-            // (1209600..)
-            //1 month to 1 month 29 days 23 hours 59 minutes 59 seconds
-            //2 months to 11 months 29 days 23 hours 59 minutes 59 seconds
-            // 1 year to 11 months 29 days 23 hours 59 minutes 59 seconds
-            // 2 years to 99 years ago.
-            _ => "Hola!!!".to_string(),
+            (1_209_600..=std::u64::MAX) => "infinite time".to_string(), //2 weeks to 29 days 23 hours 59 minutes 59 seconds
+                                                                        // (1209600..)
+                                                                        //1 month to 1 month 29 days 23 hours 59 minutes 59 seconds
+                                                                        //2 months to 11 months 29 days 23 hours 59 minutes 59 seconds
+                                                                        // 1 year to 11 months 29 days 23 hours 59 minutes 59 seconds
+                                                                        // 2 years to 99 years ago.
         }
     }
     //

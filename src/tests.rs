@@ -1,25 +1,26 @@
 #[cfg(test)]
 mod tests {
     use crate::time_ago::{Config, TimeAgo, TimeType};
-    use std::time::{Duration, SystemTime};
+    use std::time::{Duration, Instant, SystemTime};
 
     #[test]
     fn test_timeago_with_config_system_time() {
-        let config = Config {
-            is_years: false,
-            is_weeks: false,
-            is_months: false,
-        };
-        let a = TimeAgo::with_config(config.clone(), TimeType::SystemTime(SystemTime::now()));
+        let a = TimeAgo::with_config(
+            Config {
+                is_years: false,
+                is_weeks: false,
+                is_months: false,
+            },
+            TimeType::Instant(Instant::now()),
+        );
         assert_eq!(a.convert(), "just now");
-
         let b = TimeAgo::with_config(
             Config {
                 is_years: false,
                 is_weeks: false,
                 is_months: false,
             },
-            TimeType::SystemTime(SystemTime::now()),
+            TimeType::Instant(Instant::now()),
         );
         assert_eq!(b.convert(), "just now");
     }
