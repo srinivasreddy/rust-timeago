@@ -1,30 +1,63 @@
-use std::fmt;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum TimeAgo {
+pub struct TimeAgo {
+    config: Config,
+    time_type: TimeType,
+}
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum TimeType {
     SystemTime(SystemTime),
     Duration(Duration),
 }
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Config {
+    pub is_weeks: bool,
+    pub is_months: bool,
+    pub is_years: bool,
+}
+
+// Default implementation of Config
+// is_weeks: false -> "23 day(s) ago" is displayed instead of "1 week(s) ago".
+// is_months: false -> "Nov 20 at 11:30 ago"  is displayed instead of "1 month(s) ago".
+// is_years: false -> "Nov 10 at 21:23 ago" is displayed instead of "10 years ago"
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            is_weeks: false,
+            is_months: false,
+            is_years: false,
+        }
+    }
+}
 
 impl TimeAgo {
-    pub fn duration(duration: Duration) -> TimeAgo {
-        TimeAgo::Duration(duration)
+    pub fn with_config(config: Config, time_type: TimeType) -> TimeAgo {
+        TimeAgo { config, time_type }
+    }
+    pub fn from_duration(config: Config, duration: Duration) -> TimeAgo {
+        TimeAgo {
+            config,
+            time_type: TimeType::Duration(duration),
+        }
     }
 
-    pub fn now() -> TimeAgo {
-        TimeAgo::SystemTime(SystemTime::now())
+    pub fn now(config: Config) -> TimeAgo {
+        Self::from_system_time(config, SystemTime::now())
     }
-    pub fn from_system_time(system_time: SystemTime) -> TimeAgo {
-        TimeAgo::SystemTime(system_time)
+    pub fn from_system_time(config: Config, system_time: SystemTime) -> TimeAgo {
+        TimeAgo {
+            config,
+            time_type: TimeType::SystemTime(system_time),
+        }
     }
 
-    pub fn convert(&self) -> String {
-        let seconds = match &self {
-            TimeAgo::SystemTime(value) => {
+    pub fn convert(self) -> String {
+        let seconds = match &self.time_type {
+            TimeType::SystemTime(value) => {
                 value.duration_since(SystemTime::now()).unwrap().as_secs()
             }
-            TimeAgo::Duration(value) => value.as_secs(),
+            TimeType::Duration(value) => value.as_secs(),
         };
         match seconds {
             // 0 to 1 second is just now
@@ -40,7 +73,7 @@ impl TimeAgo {
             //2 hours to 23 hours 59 minutes 59 seconds
             (7200..=86399) => format!("{} hours ago", seconds / 60 / 60),
             //1 day to 1 day 23 hours 59 minutes 59 seconds,
-            (86400..=172799) => "1 day ago".to_string(),
+            (86400..=172799) => "yesterday".to_string(),
             //2 days to 6 days 23 hours 59 minutes 59 seconds
             (172800..=604799) => format!("{} days ago", seconds / 60 / 60 / 24),
             //1 week to 1 week 6 days 23 hours 59 minutes 59 seconds
@@ -51,7 +84,7 @@ impl TimeAgo {
             //2 months to 11 months 29 days 23 hours 59 minutes 59 seconds
             // 1 year to 11 months 29 days 23 hours 59 minutes 59 seconds
             // 2 years to 99 years ago.
-            _ => seconds.to_string(),
+            _ => "Hola!!!".to_string(),
         }
     }
     //
