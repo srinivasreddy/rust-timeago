@@ -19,8 +19,8 @@ pub struct Config {
 
 // Default implementation of Config
 // is_weeks: false -> "23 day(s) ago" is displayed instead of "1 week(s) ago".
-// is_months: false -> "Nov 20 at 11:30 ago"  is displayed instead of "1 month(s) ago".
-// is_years: false -> "Nov 10 at 21:23 ago" is displayed instead of "10 years ago"
+// is_months: false -> "Nov 20 at 11:30"  is displayed instead of "1 month(s) ago".
+// is_years: false -> "Nov 10 at 21:23" is displayed instead of "10 years ago"
 impl Default for Config {
     fn default() -> Self {
         Config {
@@ -52,7 +52,7 @@ impl TimeAgo {
         }
     }
 
-    pub fn convert(self) -> String {
+    pub fn convert(&self) -> String {
         let seconds = match &self.time_type {
             TimeType::SystemTime(value) => {
                 value.duration_since(SystemTime::now()).unwrap().as_secs()
@@ -71,13 +71,19 @@ impl TimeAgo {
             //1 hour to 2 hours
             (3600..=7199) => "1 hour ago".to_string(),
             //2 hours to 23 hours 59 minutes 59 seconds
-            (7200..=86399) => format!("{} hours ago", seconds / 60 / 60),
+            (7200..=86_399) => format!("{} hours ago", seconds / 60 / 60),
             //1 day to 1 day 23 hours 59 minutes 59 seconds,
-            (86400..=172799) => "yesterday".to_string(),
+            (86_400..=172_799) => "yesterday".to_string(),
             //2 days to 6 days 23 hours 59 minutes 59 seconds
-            (172800..=604799) => format!("{} days ago", seconds / 60 / 60 / 24),
+            (172_800..=604_799) => format!("{} days ago", seconds / 60 / 60 / 24),
             //1 week to 1 week 6 days 23 hours 59 minutes 59 seconds
-            (604800..=1209599) => "1 week ago".to_string(),
+            (604_800..=1_209_599) => {
+                if &self.config.is_weeks {
+                    "1 week ago".to_string()
+                } else {
+                    format!("{} days ago", seconds / 60 / 60 / 24)
+                }
+            }
             //2 weeks to 29 days 23 hours 59 minutes 59 seconds
             // (1209600..)
             //1 month to 1 month 29 days 23 hours 59 minutes 59 seconds
