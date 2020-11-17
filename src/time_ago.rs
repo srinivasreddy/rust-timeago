@@ -70,7 +70,7 @@ impl TimeAgo {
             //1 hour to 2 hours
             (3600..=7199) => "1 hour ago".to_string(),
             //2 hours to 23 hours 59 minutes 59 seconds
-            (7200..=86_399) => format!("{} hours ago", seconds / 60 / 60),
+            (7200..=86_399) => format!("{} hours ago", seconds / (60 * 60)),
             //1 day to 1 day 23 hours 59 minutes 59 seconds,
             (86_400..=172_799) => "yesterday".to_string(),
             //2 days to 6 days 23 hours 59 minutes 59 seconds
@@ -93,7 +93,8 @@ impl TimeAgo {
                     "".to_string()
                 }
             }
-            (2_419_200..4838399) => {
+            //1 month to 1 month 29 days 23 hours 59 minutes 59 seconds
+            (2_419_200..=4_838_399) => {
                 if self.config.is_months {
                     "1 month ago".to_string()
                 } else {
@@ -102,10 +103,41 @@ impl TimeAgo {
                         _ => "".to_string(),
                     }
                 }
-            } //1 month to 1 month 29 days 23 hours 59 minutes 59 seconds
-              //2 months to 11 months 29 days 23 hours 59 minutes 59 seconds
-              // 1 year to 11 months 29 days 23 hours 59 minutes 59 seconds
-              // 2 years to 99 years ago.
+            }
+            //2 months to 365.25 days
+            (4_838_400..=29_484_000) => {
+                if self.config.is_months {
+                    format!("{} months ago", seconds / (60 * 60 * 24 * 365))
+                } else {
+                    match &self.time_type {
+                        TimeType::SystemTime(value) => "".to_string(),
+                        _ => "".to_string(),
+                    }
+                }
+            }
+            // 1 year to 11 months 29 days 23 hours 59 minutes 59 seconds
+            (29_484_001..=58_968_000) => {
+                if self.config.is_years {
+                    "1 year ago".to_string()
+                } else {
+                    match &self.time_type {
+                        TimeType::SystemTime(value) => "".to_string(),
+                        _ => "".to_string(),
+                    }
+                }
+            }
+            // 2 years to 99 years ago.
+            (58_968_000..=2_948_400_000) => {
+                if self.config.is_years {
+                    format!("{} years ago", seconds / (60 * 60 * 24 * 365))
+                } else {
+                    match &self.time_type {
+                        TimeType::SystemTime(value) => "".to_string(),
+                        _ => "".to_string(),
+                    }
+                }
+            }
+            _ => "invalid format".to_string(),
         }
     }
 }
