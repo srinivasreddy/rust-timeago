@@ -1,3 +1,5 @@
+use chrono::format::Numeric::Timestamp;
+use chrono::{TimeZone, Utc};
 use std::time::{Duration, Instant, SystemTime};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -22,6 +24,16 @@ pub struct Config {
 // is_weeks: false -> "23 day(s) ago" is displayed instead of "1 week(s) ago".
 // is_months: false -> "Nov 20 at 11:30"  is displayed instead of "1 month(s) ago".
 // is_years: false -> "Nov 10 at 21:23" is displayed instead of "10 years ago"
+
+impl Default for Config {
+    fn default() -> Config {
+        Config {
+            is_weeks: false,
+            is_months: false,
+            is_years: false,
+        }
+    }
+}
 
 impl TimeAgo {
     pub fn with_config(config: Config, time_type: TimeType) -> TimeAgo {
@@ -50,13 +62,31 @@ impl TimeAgo {
     }
 
     pub fn convert(&self) -> String {
-        let seconds = match &self.time_type {
-            TimeType::SystemTime(value) => SystemTime::now()
-                .duration_since(*value)
-                .unwrap_or(Duration::from_secs(0))
-                .as_secs(),
-            TimeType::Instant(value) => Instant::now().duration_since(*value).as_secs(),
-            TimeType::Duration(value) => value.as_secs(),
+        let current_sec_function = || {
+            SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs()
+        };
+        let (seconds, epoch_seconds) = match &self.time_type {
+            TimeType::SystemTime(value) => (
+                SystemTime::now()
+                    .duration_since(*value)
+                    .unwrap_or(Duration::from_secs(0))
+                    .as_secs(),
+                value
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            ),
+            TimeType::Instant(value) => {
+                let seconds = Instant::now().duration_since(*value).as_secs();
+                (seconds, current_sec_function() - seconds)
+            }
+            TimeType::Duration(value) => {
+                let seconds = value.as_secs();
+                (seconds, current_sec_function() - seconds)
+            }
         };
         match seconds {
             // 0 to 1 second is just now
@@ -80,17 +110,19 @@ impl TimeAgo {
                 if self.config.is_weeks {
                     "1 week ago".to_string()
                 } else {
-                    // format like "Nov 20 at 10:23"
-                    "".to_string()
+                    Utc.timestamp(epoch_seconds as i64, 0)
+                        .format("%h %y at %X")
+                        .to_string()
                 }
             }
             //2 weeks to 29 days 23 hours 59 minutes 59 seconds
             (1_209_600..=2_419_199) => {
                 if self.config.is_weeks {
-                    format!("{} week ago", seconds / (60 * 60 * 24 * 7))
+                    format!("{} weeks ago", seconds / (60 * 60 * 24 * 7))
                 } else {
-                    // format like "Nov 20 at 10:23"
-                    "".to_string()
+                    Utc.timestamp(epoch_seconds as i64, 0)
+                        .format("%h %y at %X")
+                        .to_string()
                 }
             }
             //1 month to 1 month 29 days 23 hours 59 minutes 59 seconds
@@ -98,43 +130,39 @@ impl TimeAgo {
                 if self.config.is_months {
                     "1 month ago".to_string()
                 } else {
-                    match &self.time_type {
-                        TimeType::SystemTime(value) => "".to_string(),
-                        _ => "".to_string(),
-                    }
+                    Utc.timestamp(epoch_seconds as i64, 0)
+                        .format("%h %y at %X")
+                        .to_string()
                 }
             }
             //2 months to 365.25 days
             (4_838_400..=29_484_000) => {
                 if self.config.is_months {
-                    format!("{} months ago", seconds / (60 * 60 * 24 * 365))
+                    format!("{} months ago", seconds / (60 * 60 * 24 * 30 * 12))
                 } else {
-                    match &self.time_type {
-                        TimeType::SystemTime(value) => "".to_string(),
-                        _ => "".to_string(),
-                    }
+                    Utc.timestamp(epoch_seconds as i64, 0)
+                        .format("%h %y at %X")
+                        .to_string()
                 }
             }
-            // 1 year to 11 months 29 days 23 hours 59 minutes 59 seconds
-            (29_484_001..=58_968_000) => {
+            // 1 year(365.25 days) to 11 months 29 days 23 hours 59 minutes 59 seconds- (2*365.25 days) - 1 second
+            (29_484_001..=58_967_999) => {
                 if self.config.is_years {
                     "1 year ago".to_string()
                 } else {
-                    match &self.time_type {
-                        TimeType::SystemTime(value) => "".to_string(),
-                        _ => "".to_string(),
-                    }
+                    Utc.timestamp(epoch_seconds as i64, 0)
+                        .format("%h %y at %X")
+                        .to_string()
                 }
             }
-            // 2 years to 99 years ago.
+            // 2 years to 100 years ago.
             (58_968_000..=2_948_400_000) => {
                 if self.config.is_years {
                     format!("{} years ago", seconds / (60 * 60 * 24 * 365))
                 } else {
-                    match &self.time_type {
-                        TimeType::SystemTime(value) => "".to_string(),
-                        _ => "".to_string(),
-                    }
+                    Utc.timestamp(epoch_seconds as i64, 0)
+                        .format("%h %y at %X")
+                        .to_string()
                 }
             }
             _ => "invalid format".to_string(),
