@@ -1,4 +1,3 @@
-use chrono::format::Numeric::Timestamp;
 use chrono::{TimeZone, Utc};
 use std::time::{Duration, Instant, SystemTime};
 
@@ -138,7 +137,7 @@ impl TimeAgo {
             //2 months to 365.25 days
             (4_838_400..=29_484_000) => {
                 if self.config.is_months {
-                    format!("{} months ago", seconds / (60 * 60 * 24 * 30 * 12))
+                    format!("{} months ago", seconds / (60 * 60 * 24 * 30))
                 } else {
                     Utc.timestamp(epoch_seconds as i64, 0)
                         .format("%h %y at %X")
