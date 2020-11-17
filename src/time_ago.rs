@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TimeAgo {
@@ -9,6 +9,7 @@ pub struct TimeAgo {
 pub enum TimeType {
     Instant(Instant),
     Duration(Duration),
+    SystemTime(SystemTime),
 }
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Config {
@@ -32,7 +33,12 @@ impl TimeAgo {
             time_type: TimeType::Duration(duration),
         }
     }
-
+    pub fn from_system_time(config: Config, system_time: SystemTime) -> TimeAgo {
+        TimeAgo {
+            config,
+            time_type: TimeType::SystemTime(system_time),
+        }
+    }
     pub fn now(config: Config) -> TimeAgo {
         Self::from_instant(config, Instant::now())
     }
@@ -45,6 +51,10 @@ impl TimeAgo {
 
     pub fn convert(&self) -> String {
         let seconds = match &self.time_type {
+            TimeType::SystemTime(value) => SystemTime::now()
+                .duration_since(*value)
+                .unwrap_or(Duration::from_secs(0))
+                .as_secs(),
             TimeType::Instant(value) => Instant::now().duration_since(*value).as_secs(),
             TimeType::Duration(value) => value.as_secs(),
         };
@@ -64,28 +74,38 @@ impl TimeAgo {
             //1 day to 1 day 23 hours 59 minutes 59 seconds,
             (86_400..=172_799) => "yesterday".to_string(),
             //2 days to 6 days 23 hours 59 minutes 59 seconds
-            (172_800..=604_799) => format!("{} days ago", seconds / 60 / 60 / 24),
+            (172_800..=604_799) => format!("{} days ago", seconds / (60 * 60 * 24)),
             //1 week to 1 week 6 days 23 hours 59 minutes 59 seconds
             (604_800..=1_209_599) => {
                 if self.config.is_weeks {
                     "1 week ago".to_string()
                 } else {
-                    format!("{} days ago", seconds / 60 / 60 / 24)
+                    // format like "Nov 20 at 10:23"
+                    "".to_string()
                 }
             }
-            (1_209_600..=std::u64::MAX) => "infinite time".to_string(), //2 weeks to 29 days 23 hours 59 minutes 59 seconds
-                                                                        // (1209600..)
-                                                                        //1 month to 1 month 29 days 23 hours 59 minutes 59 seconds
-                                                                        //2 months to 11 months 29 days 23 hours 59 minutes 59 seconds
-                                                                        // 1 year to 11 months 29 days 23 hours 59 minutes 59 seconds
-                                                                        // 2 years to 99 years ago.
+            //2 weeks to 29 days 23 hours 59 minutes 59 seconds
+            (1_209_600..=2_419_199) => {
+                if self.config.is_weeks {
+                    format!("{} week ago", seconds / (60 * 60 * 24 * 7))
+                } else {
+                    // format like "Nov 20 at 10:23"
+                    "".to_string()
+                }
+            }
+            (2_419_200..4838399) => {
+                if self.config.is_months {
+                    "1 month ago".to_string()
+                } else {
+                    match &self.time_type {
+                        TimeType::SystemTime(value) => "".to_string(),
+                        _ => "".to_string(),
+                    }
+                }
+            } //1 month to 1 month 29 days 23 hours 59 minutes 59 seconds
+              //2 months to 11 months 29 days 23 hours 59 minutes 59 seconds
+              // 1 year to 11 months 29 days 23 hours 59 minutes 59 seconds
+              // 2 years to 99 years ago.
         }
     }
-    //
-    // pub fn convert_with_locale(&self, String: _locale) -> String {
-    //     match &self {
-    //         TimeAgo::SystemTime(_value) => "Helloworld!!!".to_string(),
-    //         TimeAgo::Duration(_value) => "Helloworld!!!".to_string(),
-    //     }
-    // }
 }
