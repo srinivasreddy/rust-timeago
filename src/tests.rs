@@ -103,7 +103,7 @@ mod tests {
         assert_eq!(
             TimeAgo::with_config(
                 custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 30 * 11))
+                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 30 * 12))
             )
             .convert(),
             "11 months ago"

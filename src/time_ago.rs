@@ -110,7 +110,7 @@ impl TimeAgo {
                     "1 week ago".to_string()
                 } else {
                     Utc.timestamp(epoch_seconds as i64, 0)
-                        .format("%h %y at %X")
+                        .format("%h %Y at %X")
                         .to_string()
                 }
             }
@@ -120,7 +120,7 @@ impl TimeAgo {
                     format!("{} weeks ago", seconds / (60 * 60 * 24 * 7))
                 } else {
                     Utc.timestamp(epoch_seconds as i64, 0)
-                        .format("%h %y at %X")
+                        .format("%h %Y at %X")
                         .to_string()
                 }
             }
@@ -130,7 +130,7 @@ impl TimeAgo {
                     "1 month ago".to_string()
                 } else {
                     Utc.timestamp(epoch_seconds as i64, 0)
-                        .format("%h %y at %X")
+                        .format("%h %Y at %X")
                         .to_string()
                 }
             }
@@ -140,7 +140,7 @@ impl TimeAgo {
                     format!("{} months ago", seconds / (60 * 60 * 24 * 30))
                 } else {
                     Utc.timestamp(epoch_seconds as i64, 0)
-                        .format("%h %y at %X")
+                        .format("%h %Y at %X")
                         .to_string()
                 }
             }
@@ -150,7 +150,7 @@ impl TimeAgo {
                     "1 year ago".to_string()
                 } else {
                     Utc.timestamp(epoch_seconds as i64, 0)
-                        .format("%h %y at %X")
+                        .format("%h %Y at %X")
                         .to_string()
                 }
             }
@@ -160,11 +160,13 @@ impl TimeAgo {
                     format!("{} years ago", seconds / (60 * 60 * 24 * 365))
                 } else {
                     Utc.timestamp(epoch_seconds as i64, 0)
-                        .format("%h %y at %X")
+                        .format("%h %Y at %X")
                         .to_string()
                 }
             }
-            _ => "invalid format".to_string(),
+            (2_948_400_001..=std::u64::MAX) => {
+                "invalid string".to_string()
+            }
         }
     }
 }
