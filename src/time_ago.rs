@@ -102,7 +102,7 @@ impl TimeAgo {
             //2 hours to 23 hours 59 minutes 59 seconds
             (7200..=86_399) => format!("{} hours ago", seconds / (60 * 60)),
             //1 day to 1 day 23 hours 59 minutes 59 seconds,
-            (86_400..=172_799) => "yesterday".to_string(),
+            (86_400..=172_799) => "1 day ago".to_string(),
             //2 days to 6 days 23 hours 59 minutes 59 seconds
             (172_800..=604_799) => format!("{} days ago", seconds / (60 * 60 * 24)),
             //1 week to 1 week 6 days 23 hours 59 minutes 59 seconds

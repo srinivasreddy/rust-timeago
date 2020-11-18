@@ -58,7 +58,7 @@ mod tests {
                 TimeType::Duration(Duration::from_secs(60 * 60 * 24))
             )
             .convert(),
-            "yesterday"
+            "1 day ago"
         );
         assert_eq!(
             TimeAgo::with_config(
