@@ -155,8 +155,8 @@ impl TimeAgo {
                         .to_string()
                 }
             }
-            // 2 years to 50 years ago.
-            (63_115_200..=1_577_880_000) => {
+            // 2 years to 99 years ago.
+            (63_115_200..=3155759999) => {
                 if self.config.is_years {
                     format!("{} years ago", seconds / (60 * 60 * 24 * 365))
                 } else {
@@ -165,8 +165,8 @@ impl TimeAgo {
                         .to_string()
                 }
             }
-            //50 years + 1 second
-            (1577880001..=std::u64::MAX) => "invalid string".to_string(),
+            //100 years and ago
+            (3155760000..=std::u64::MAX) => "invalid string".to_string(),
         }
     }
 }

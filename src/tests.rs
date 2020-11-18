@@ -148,7 +148,7 @@ mod tests {
                 )) // duration calculates 365.25* 60 * 60 * 24 for an year
             )
             .convert(),
-            "invalid string"
+            "51 years ago"
         );
         assert_eq!(
             TimeAgo::with_config(
@@ -160,5 +160,19 @@ mod tests {
             .convert(),
             "invalid string"
         );
+        // assert_eq!(
+        //     TimeAgo::with_config(
+        //         Config{
+        //             is_months: false,
+        //             is_weeks: false,
+        //             is_years: false
+        //         },
+        //         TimeType::Duration(Duration::from_secs(
+        //             (60.0 * 60.0 * 24.0 * 365.25 * 50.0) as u64
+        //         )) // duration calculates 365.25* 60 * 60 * 24 for an year
+        //     )
+        //         .convert(),
+        //     "Nov 1970 at 17:07:20"
+        // );
     }
 }
