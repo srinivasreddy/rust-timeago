@@ -1,4 +1,5 @@
 use chrono::{TimeZone, Utc};
+use std::cmp::min;
 use std::time::{Duration, Instant, SystemTime};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -80,11 +81,11 @@ impl TimeAgo {
             ),
             TimeType::Instant(value) => {
                 let seconds = Instant::now().duration_since(*value).as_secs();
-                (seconds, current_sec_function() - seconds)
+                (seconds, current_sec_function().wrapping_sub(seconds))
             }
             TimeType::Duration(value) => {
                 let seconds = value.as_secs();
-                (seconds, current_sec_function() - seconds)
+                (seconds, current_sec_function().wrapping_sub(seconds))
             }
         };
         match seconds {
@@ -115,7 +116,7 @@ impl TimeAgo {
                 }
             }
             //2 weeks to 29 days 23 hours 59 minutes 59 seconds
-            (1_209_600..=2_419_199) => {
+            (1_209_600..=2_591_999) => {
                 if self.config.is_weeks {
                     format!("{} weeks ago", seconds / (60 * 60 * 24 * 7))
                 } else {
@@ -125,7 +126,7 @@ impl TimeAgo {
                 }
             }
             //1 month to 1 month 29 days 23 hours 59 minutes 59 seconds
-            (2_419_200..=4_838_399) => {
+            (2_592_000..=5_183_999) => {
                 if self.config.is_months {
                     "1 month ago".to_string()
                 } else {
@@ -135,17 +136,17 @@ impl TimeAgo {
                 }
             }
             //2 months to 365.25 days
-            (4_838_400..=29_484_000) => {
+            (5_184_000..=31_557_599) => {
                 if self.config.is_months {
-                    format!("{} months ago", seconds / (60 * 60 * 24 * 30))
+                    format!("{} months ago", min(seconds / (60 * 60 * 24 * 30), 11))
                 } else {
                     Utc.timestamp(epoch_seconds as i64, 0)
                         .format("%h %Y at %X")
                         .to_string()
                 }
             }
-            // 1 year(365.25 days) to 11 months 29 days 23 hours 59 minutes 59 seconds- (2*365.25 days) - 1 second
-            (29_484_001..=58_967_999) => {
+            // 1 year(365.25 days) to 1 year 11 months 29 days 23 hours 59 minutes 59 seconds - (2*365.25 days) - 1 second
+            (31_557_600..=63_115_199) => {
                 if self.config.is_years {
                     "1 year ago".to_string()
                 } else {
@@ -154,8 +155,8 @@ impl TimeAgo {
                         .to_string()
                 }
             }
-            // 2 years to 100 years ago.
-            (58_968_000..=2_948_400_000) => {
+            // 2 years to 50 years ago.
+            (63_115_200..=1_577_880_000) => {
                 if self.config.is_years {
                     format!("{} years ago", seconds / (60 * 60 * 24 * 365))
                 } else {
@@ -164,9 +165,8 @@ impl TimeAgo {
                         .to_string()
                 }
             }
-            (2_948_400_001..=std::u64::MAX) => {
-                "invalid string".to_string()
-            }
+            //50 years + 1 second
+            (1577880001..=std::u64::MAX) => "invalid string".to_string(),
         }
     }
 }

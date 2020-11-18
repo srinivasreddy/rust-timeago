@@ -103,10 +103,62 @@ mod tests {
         assert_eq!(
             TimeAgo::with_config(
                 custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 30 * 12))
+                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 30 * 12)) // duration calculates 365.25* 60 * 60 * 24 for an year
             )
             .convert(),
             "11 months ago"
+        );
+
+        assert_eq!(
+            TimeAgo::with_config(
+                custom,
+                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 366)) // duration calculates 365.25* 60 * 60 * 24 for an year
+            )
+            .convert(),
+            "1 year ago"
+        );
+
+        assert_eq!(
+            TimeAgo::with_config(
+                custom,
+                TimeType::Duration(Duration::from_secs(
+                    (60.0 * 60.0 * 24.0 * 365.25 * 2.0) as u64 - 1
+                )) // duration calculates 365.25* 60 * 60 * 24 for an year
+            )
+            .convert(),
+            "1 year ago"
+        );
+
+        assert_eq!(
+            TimeAgo::with_config(
+                custom,
+                TimeType::Duration(Duration::from_secs(
+                    (60.0 * 60.0 * 24.0 * 365.25 * 2.0) as u64
+                )) // duration calculates 365.25* 60 * 60 * 24 for an year
+            )
+            .convert(),
+            "2 years ago"
+        );
+
+        assert_eq!(
+            TimeAgo::with_config(
+                custom,
+                TimeType::Duration(Duration::from_secs(
+                    (60.0 * 60.0 * 24.0 * 365.25 * 51.0) as u64
+                )) // duration calculates 365.25* 60 * 60 * 24 for an year
+            )
+            .convert(),
+            "invalid string"
+        );
+        assert_eq!(
+            TimeAgo::with_config(
+                custom,
+                TimeType::Duration(Duration::from_secs(
+                    (60.0 * 60.0 * 24.0 * 365.25 * 100.0) as u64
+                )) // duration calculates 365.25* 60 * 60 * 24 for an year
+            )
+            .convert(),
+            "invalid string"
         );
     }
 }
