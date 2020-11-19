@@ -20,14 +20,14 @@ to mock the current system time.
 ## Usage
 
 ```rust
-use time_ago::{Config, TimeAgo, TimeType};
+use time_ago::{Config, TimeAgo};
 fn usage() {
     let config = Config { 
         is_years: false,
         is_weeks: false,
         is_months: false,
     };
-    let a = TimeAgo::with_config(config, TimeType::SystemTime(SystemTime::now()));
+    let a = TimeAgo::with_config(config, SystemTime::now());
     assert_eq!(a.convert(), "just now");
 }
 ```
