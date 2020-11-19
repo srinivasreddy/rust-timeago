@@ -3,9 +3,15 @@ This is an yet another implementation of `timeago` time display.This library is 
 inspired from the strings you see on stackoverflow.com
 
 ## Design
-I haven't considered the leap second into design and i have taken generally 30 days as month.
+### Update
+I need to change the logic for "1 day ago" and "n days ago" logic. For example when it happened on
+Wednesday night and saying on Friday "1 day ago" because it falls between somewhere 40-47 hours
+does not make sense. That is not how days work.
+
+~~I haven't considered the leap second into design and i have taken generally 30 days as month.
 So you can assume that i have sacrificed accuracy of months at the altar of usability. An year is 
-considered as 365.25 days long.
+considered as 365.25 days long.~~
+
 
 ## TODO.
 1. Haven't implemented tests for strings such as `"Nov 1970 at 17:20:08"`. I need to use Faketime library
