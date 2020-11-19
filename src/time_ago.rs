@@ -35,30 +35,32 @@ impl Default for Config {
     }
 }
 
+impl From<Duration> for TimeType {
+    fn from(duration: Duration) -> Self {
+        TimeType::Duration(duration)
+    }
+}
+
+impl From<SystemTime> for TimeType {
+    fn from(system_time: SystemTime) -> Self {
+        TimeType::SystemTime(system_time)
+    }
+}
+
+impl From<Instant> for TimeType {
+    fn from(instant: Instant) -> Self {
+        TimeType::Instant(instant)
+    }
+}
+
 impl TimeAgo {
-    pub fn with_config(config: Config, time_type: TimeType) -> TimeAgo {
+    pub fn with_config(config: Config, time_type: impl Into<TimeType>) -> TimeAgo {
+        let time_type = time_type.into();
         TimeAgo { config, time_type }
     }
-    pub fn from_duration(config: Config, duration: Duration) -> TimeAgo {
-        TimeAgo {
-            config,
-            time_type: TimeType::Duration(duration),
-        }
-    }
-    pub fn from_system_time(config: Config, system_time: SystemTime) -> TimeAgo {
-        TimeAgo {
-            config,
-            time_type: TimeType::SystemTime(system_time),
-        }
-    }
+
     pub fn now(config: Config) -> TimeAgo {
-        Self::from_instant(config, Instant::now())
-    }
-    pub fn from_instant(config: Config, instant: Instant) -> TimeAgo {
-        TimeAgo {
-            config,
-            time_type: TimeType::Instant(instant),
-        }
+        Self::with_config(config, Instant::now())
     }
 
     pub fn convert(&self) -> String {
