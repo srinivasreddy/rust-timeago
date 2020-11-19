@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::time_ago::{Config, TimeAgo, TimeType};
+    use crate::time_ago::{Config, TimeAgo};
     use std::time::{Duration, Instant, SystemTime};
 
     #[test]
@@ -16,94 +16,64 @@ mod tests {
             is_weeks: true,
             is_months: true,
         };
-        let a = TimeAgo::with_config(config, TimeType::SystemTime(SystemTime::now()));
+        let a = TimeAgo::with_config(config, SystemTime::now());
         assert_eq!(a.convert(), "just now");
-        let b = TimeAgo::with_config(config, TimeType::Duration(Duration::from_secs(1)));
+        let b = TimeAgo::with_config(config, Duration::from_secs(1));
         assert_eq!(b.convert(), "just now");
-        let c = TimeAgo::with_config(config, TimeType::Instant(Instant::now()));
+        let c = TimeAgo::with_config(config, Instant::now());
         assert_eq!(c.convert(), "just now");
         assert_eq!(
-            TimeAgo::with_config(custom, TimeType::Duration(Duration::from_secs(5))).convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(5)).convert(),
             "5 seconds ago"
         );
         assert_eq!(
-            TimeAgo::with_config(custom, TimeType::Duration(Duration::from_secs(60))).convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(60)).convert(),
             "1 minute ago"
         );
         assert_eq!(
-            TimeAgo::with_config(custom, TimeType::Duration(Duration::from_secs(120))).convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(120)).convert(),
             "2 minutes ago"
         );
         assert_eq!(
-            TimeAgo::with_config(custom, TimeType::Duration(Duration::from_secs(60 * 60)))
-                .convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(60 * 60)).convert(),
             "1 hour ago"
         );
         assert_eq!(
-            TimeAgo::with_config(custom, TimeType::Duration(Duration::from_secs(60 * 60 * 2)))
-                .convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(60 * 60 * 2)).convert(),
             "2 hours ago"
         );
         assert_eq!(
-            TimeAgo::with_config(
-                custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 23))
-            )
-            .convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(60 * 60 * 23)).convert(),
             "23 hours ago"
         );
         assert_eq!(
-            TimeAgo::with_config(
-                custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 24))
-            )
-            .convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(60 * 60 * 24)).convert(),
             "1 day ago"
         );
         assert_eq!(
-            TimeAgo::with_config(
-                custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 7))
-            )
-            .convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(60 * 60 * 24 * 7)).convert(),
             "1 week ago"
         );
         assert_eq!(
-            TimeAgo::with_config(
-                custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 7 * 3))
-            )
-            .convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(60 * 60 * 24 * 7 * 3)).convert(),
             "3 weeks ago"
         );
         assert_eq!(
-            TimeAgo::with_config(
-                custom,
-                TimeType::Duration(Duration::from_secs((60 * 60 * 24 * 7 * 4) - 1))
-            )
-            .convert(),
+            TimeAgo::with_config(custom, Duration::from_secs((60 * 60 * 24 * 7 * 4) - 1)).convert(),
             "3 weeks ago"
         );
         assert_eq!(
-            TimeAgo::with_config(
-                custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 30))
-            )
-            .convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(60 * 60 * 24 * 30)).convert(),
             "1 month ago"
         );
         assert_eq!(
-            TimeAgo::with_config(
-                custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 30 * 2))
-            )
-            .convert(),
+            TimeAgo::with_config(custom, Duration::from_secs(60 * 60 * 24 * 30 * 2)).convert(),
             "2 months ago"
         );
         assert_eq!(
             TimeAgo::with_config(
                 custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 30 * 12)) // duration calculates 365.25* 60 * 60 * 24 for an year
+                Duration::from_secs(60 * 60 * 24 * 30 * 12) // duration calculates 365.25* 60 * 60 * 24 for an year
             )
             .convert(),
             "11 months ago"
@@ -112,7 +82,7 @@ mod tests {
         assert_eq!(
             TimeAgo::with_config(
                 custom,
-                TimeType::Duration(Duration::from_secs(60 * 60 * 24 * 366)) // duration calculates 365.25* 60 * 60 * 24 for an year
+                Duration::from_secs(60 * 60 * 24 * 366) // duration calculates 365.25* 60 * 60 * 24 for an year
             )
             .convert(),
             "1 year ago"
@@ -121,9 +91,7 @@ mod tests {
         assert_eq!(
             TimeAgo::with_config(
                 custom,
-                TimeType::Duration(Duration::from_secs(
-                    (60.0 * 60.0 * 24.0 * 365.25 * 2.0) as u64 - 1
-                )) // duration calculates 365.25* 60 * 60 * 24 for an year
+                Duration::from_secs((60.0 * 60.0 * 24.0 * 365.25 * 2.0) as u64 - 1) // duration calculates 365.25* 60 * 60 * 24 for an year
             )
             .convert(),
             "1 year ago"
@@ -132,9 +100,7 @@ mod tests {
         assert_eq!(
             TimeAgo::with_config(
                 custom,
-                TimeType::Duration(Duration::from_secs(
-                    (60.0 * 60.0 * 24.0 * 365.25 * 2.0) as u64
-                )) // duration calculates 365.25* 60 * 60 * 24 for an year
+                Duration::from_secs((60.0 * 60.0 * 24.0 * 365.25 * 2.0) as u64) // duration calculates 365.25* 60 * 60 * 24 for an year
             )
             .convert(),
             "2 years ago"
@@ -143,9 +109,7 @@ mod tests {
         assert_eq!(
             TimeAgo::with_config(
                 custom,
-                TimeType::Duration(Duration::from_secs(
-                    (60.0 * 60.0 * 24.0 * 365.25 * 51.0) as u64
-                )) // duration calculates 365.25* 60 * 60 * 24 for an year
+                Duration::from_secs((60.0 * 60.0 * 24.0 * 365.25 * 51.0) as u64) // duration calculates 365.25* 60 * 60 * 24 for an year
             )
             .convert(),
             "51 years ago"
@@ -153,9 +117,7 @@ mod tests {
         assert_eq!(
             TimeAgo::with_config(
                 custom,
-                TimeType::Duration(Duration::from_secs(
-                    (60.0 * 60.0 * 24.0 * 365.25 * 100.0) as u64
-                )) // duration calculates 365.25* 60 * 60 * 24 for an year
+                Duration::from_secs((60.0 * 60.0 * 24.0 * 365.25 * 100.0) as u64) // duration calculates 365.25* 60 * 60 * 24 for an year
             )
             .convert(),
             "invalid string"
@@ -167,9 +129,9 @@ mod tests {
         //             is_weeks: false,
         //             is_years: false
         //         },
-        //         TimeType::Duration(Duration::from_secs(
+        //         Duration::from_secs(
         //             (60.0 * 60.0 * 24.0 * 365.25 * 50.0) as u64
-        //         )) // duration calculates 365.25* 60 * 60 * 24 for an year
+        //         ) // duration calculates 365.25* 60 * 60 * 24 for an year
         //     )
         //         .convert(),
         //     "Nov 1970 at 17:07:20"
