@@ -62,12 +62,13 @@ impl TimeAgo {
     }
 
     pub fn convert(&self) -> String {
-        let current_sec_function = || {
+        let current_secs = || {
             SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
                 .unwrap()
                 .as_secs()
         };
+
         let (seconds, epoch_seconds) = match &self.time_type {
             TimeType::SystemTime(value) => (
                 SystemTime::now()
@@ -81,11 +82,11 @@ impl TimeAgo {
             ),
             TimeType::Instant(value) => {
                 let seconds = Instant::now().duration_since(*value).as_secs();
-                (seconds, current_sec_function().wrapping_sub(seconds))
+                (seconds, current_secs().wrapping_sub(seconds))
             }
             TimeType::Duration(value) => {
                 let seconds = value.as_secs();
-                (seconds, current_sec_function().wrapping_sub(seconds))
+                (seconds, current_secs().wrapping_sub(seconds))
             }
         };
         match seconds {
