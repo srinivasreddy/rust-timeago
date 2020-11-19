@@ -75,7 +75,7 @@ impl TimeAgo {
             TimeType::SystemTime(value) => (
                 SystemTime::now()
                     .duration_since(*value)
-                    .unwrap_or(Duration::from_secs(0))
+                    .unwrap_or_else(|_| Duration::from_secs(0))
                     .as_secs(),
                 value
                     .duration_since(SystemTime::UNIX_EPOCH)
